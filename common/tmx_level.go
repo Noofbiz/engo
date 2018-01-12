@@ -102,6 +102,7 @@ func (d *TMXData) decodeTile() ([]uint32, error) {
 func (d *TMXData) decodeCSV() ([]uint32, error) {
 	b := strings.NewReader(strings.TrimSpace(d.Data))
 	cr := csv.NewReader(b)
+	cr.FieldsPerRecord = -1
 	tm := make([]uint32, 0)
 	if recs, err := cr.ReadAll(); err == nil {
 		if len(recs) < 1 {
@@ -109,7 +110,10 @@ func (d *TMXData) decodeCSV() ([]uint32, error) {
 		}
 
 		for _, rec := range recs {
-			for _, id := range rec {
+			for i, id := range rec {
+				if id == "" && i == len(rec)-1 {
+					continue
+				}
 				if nextInt, err := strconv.ParseUint(id, 10, 32); err == nil {
 					tm = append(tm, uint32(nextInt))
 				} else {
